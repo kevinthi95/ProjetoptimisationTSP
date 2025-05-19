@@ -28,21 +28,43 @@ def saisir_matrice_distances():
                     print("Entrée invalide, veuillez entrer un nombre.")
     return dist
 
+def calcul_cout_cycle(chemin, dist):
+    cout = 0
+    for i in range(len(chemin)-1):
+        cout += dist[chemin[i], chemin[i+1]]
+    return cout
+
+def amelioration_2opt(chemin, dist):
+    n = len(chemin) - 1  # chemin fermé, dernier = premier
+    amelioration = True
+    while amelioration:
+        amelioration = False
+        for i in range(1, n-1):
+            for j in range(i+1, n):
+                if j - i == 1:
+                    continue
+                delta = (dist[chemin[i-1], chemin[j]] + dist[chemin[i], chemin[(j+1)%n]]) - (dist[chemin[i-1], chemin[i]] + dist[chemin[j], chemin[(j+1)%n]])
+                if delta < -1e-12:
+                    chemin[i:j+1] = reversed(chemin[i:j+1])
+                    amelioration = True
+        if amelioration:
+            continue
+    return chemin
+
 def plus_proche_voisin(dist, depart=0):
     n = len(dist)
     visite = [False]*n
     visite[depart] = True
     chemin = [depart]
-    cout = 0
     actuel = depart
     for _ in range(n-1):
-        suivant = np.argmin([dist[actuel][j] if not visite[j] else np.inf for j in range(n)])
-        cout += dist[actuel][suivant]
+        candidats = [dist[actuel][j] if not visite[j] else np.inf for j in range(n)]
+        suivant = np.argmin(candidats)
         visite[suivant] = True
         chemin.append(suivant)
         actuel = suivant
-    cout += dist[actuel][depart]
     chemin.append(depart)
+    cout = calcul_cout_cycle(chemin, dist)
     return chemin, cout
 
 def construire_1_arbre(dist_modifiee, racine=0):
@@ -73,49 +95,74 @@ def degre_noeuds(graphe, n):
 def longueur_1_arbre(one_tree):
     return sum(attr['weight'] for u,v,attr in one_tree.edges(data=True))
 
-def sous_gradient_tsp(dist, alpha=1, epsilon=0.01, kmax=100, racine=0):
+def sous_gradient_tsp(dist, alpha_init=1.5, epsilon=1e-7, kmax=500, racine=0):
     n = dist.shape[0]
     lambdas = np.zeros(n)
-    _, UB = plus_proche_voisin(dist, racine)
-    print(f"Borne supérieure initiale (heuristique plus proche voisin) : {UB:.2f}")
+    chemin_init, UB = plus_proche_voisin(dist, racine)
+    chemin_init = amelioration_2opt(chemin_init, dist)
+    UB = calcul_cout_cycle(chemin_init, dist)
+    print(f"Borne supérieure initiale améliorée (2-opt) : {UB:.6f}")
     k = 0
     LB = -np.inf
+    alpha = alpha_init
+
     while k < kmax:
         dist_modifiee = np.copy(dist)
         for i in range(n):
             for j in range(n):
                 if i != j:
                     dist_modifiee[i,j] = dist[i,j] - lambdas[j]
+
         one_tree = construire_1_arbre(dist_modifiee, racine)
         longueur = longueur_1_arbre(one_tree)
         LBk = longueur + lambdas.sum()
+
         if LBk > LB:
             LB = LBk
+
         degres = degre_noeuds(one_tree, n)
         g = np.array([2 - deg for deg in degres])
         norm_g = np.linalg.norm(g)
+
         if norm_g == 0:
             print("Sous-gradient nul, solution optimale trouvée.")
             break
+
         tk = alpha * (UB - LBk) / (norm_g**2)
+        if tk <= 0:
+            tk = 1e-6
+
         lambdas = np.maximum(0, lambdas + tk * g)
-        _, UB_candidate = plus_proche_voisin(dist, racine)
+
+        chemin_pv, _ = plus_proche_voisin(dist, racine)
+        chemin_opt = amelioration_2opt(chemin_pv, dist)
+        UB_candidate = calcul_cout_cycle(chemin_opt, dist)
         if UB_candidate < UB:
             UB = UB_candidate
-        print(f"Iteration {k+1} | LB={LBk:.2f} | UB={UB:.2f} | Ecart relatif={(UB-LBk)/UB*100:.2f}% | ||g||={norm_g:.2f}")
-        if (UB - LBk) / UB < epsilon:
+
+        ecart_relatif = (UB - LBk) / UB
+
+        print(f"Iter {k+1:3d} | LB = {LBk:.6f} | UB = {UB:.6f} | Ecart relatif = {ecart_relatif:.10f} | ||g|| = {norm_g:.6f} | tk = {tk:.8f} | alpha = {alpha:.5f}")
+
+        # Pour forcer plus d'itérations, commente temporairement les break suivants
+        if ecart_relatif < epsilon:
             print("Convergence atteinte avec un écart relatif faible.")
             break
-        if norm_g < 1e-5:
+
+        if norm_g < 1e-8:
             print("Sous-gradient proche de zéro, arrêt.")
             break
+
         k += 1
+        alpha *= 0.99  # décroissance plus lente
+
     return {
         "lambdas": lambdas,
         "borne_inférieure": LB,
         "borne_supérieure": UB,
         "iterations": k
     }
+
 
 def main():
     dist = saisir_matrice_distances()
