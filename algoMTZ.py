@@ -1,4 +1,4 @@
-from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpBinary, LpInteger, LpStatus, value
+from pulp import LpProblem, LpMinimize, LpVariable, LpSum, LpBinary, LpInteger, LpStatus, Value
 import matplotlib.pyplot as plt
 import math
 
