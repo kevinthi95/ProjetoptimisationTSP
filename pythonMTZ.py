@@ -19,7 +19,7 @@ for i in range(n):
                 dist_matrix[j][i] = val
                 break
             except ValueError:
-                print("❌ Entrée invalide. Veuillez entrer un nombre.")
+                print("Entrée invalide. Veuillez entrer un nombre.")
 
 # mise en place du shéma final
 coords = [[math.cos(2 * math.pi * i / n) * 10, math.sin(2 * math.pi * i / n) * 10] for i in range(n)]
@@ -87,7 +87,7 @@ plot_enhanced_path(path, coords, dist_matrix)
 
 # Résultat 
 path_human = [i + 1 for i in path]
-print("\n✅ Résultat")
+print("\n Résultat")
 print("Chemin optimal :", path_human)
 print("Distance totale :", round(value(model.objective), 2))
 print("Statut :", LpStatus[model.status])
