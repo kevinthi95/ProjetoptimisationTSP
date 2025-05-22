@@ -85,7 +85,7 @@ def plot_enhanced_path(path, coords, dist_matrix):
 
 plot_enhanced_path(path, coords, dist_matrix)
 
-# 7. Résultat 
+# Résultat 
 path_human = [i + 1 for i in path]
 print("\n✅ Résultat")
 print("Chemin optimal :", path_human)
