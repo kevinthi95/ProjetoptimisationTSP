@@ -3,11 +3,10 @@ import itertools
 import time
 import matplotlib.pyplot as plt
 
-# === Paramètres ===
 np.random.seed(0)
 n = 6  # nombre de villes
 
-# === Génération aléatoire des villes ===
+# généré nombre aléatoire
 coords = np.random.rand(n, 2) * 100
 distance_matrix = np.zeros((n, n))
 for i in range(n):
@@ -15,7 +14,7 @@ for i in range(n):
         if i != j:
             distance_matrix[i][j] = np.linalg.norm(coords[i] - coords[j])
 
-# === Fonctions utiles ===
+# fonction 
 def calculate_total_distance(route, dist_matrix):
     return sum(dist_matrix[route[i], route[(i + 1) % len(route)]] for i in range(len(route)))
 
@@ -33,7 +32,7 @@ def plot_tsp(coords, route, title, color):
     plt.axis("equal")
     plt.show()
 
-# === 2-opt ===
+# methode 2-opt
 def two_opt(route, dist_matrix):
     best = route
     improved = True
@@ -50,7 +49,7 @@ def two_opt(route, dist_matrix):
         route = best
     return best
 
-# === Held-Karp ===
+# méthode Held-Karp 
 def held_karp(dist_matrix):
     n = len(dist_matrix)
     C = {}
@@ -91,7 +90,7 @@ def held_karp(dist_matrix):
     path.append(0)
     return path, opt
 
-# === Exécution des deux algorithmes ===
+# Exécution des deux algorithmes
 
 # 2-opt
 start_2opt = time.time()
@@ -106,7 +105,7 @@ route_hk, dist_hk = held_karp(distance_matrix)
 time_hk = time.time() - start_hk
 route_hk.append(0)
 
-# === Affichage résultats ===
+# résultats
 print("\n===== COMPARAISON DES ALGOS TSP =====\n")
 print("🔁 2-opt")
 print("Route :", route_2opt)
@@ -118,6 +117,6 @@ print("Route :", route_hk)
 print("Distance :", round(dist_hk, 2))
 print("Temps :", round(time_hk, 4), "s")
 
-# === Visualisation des parcours ===
+# Visualisation de tous les parcours
 plot_tsp(coords, route_2opt, "Parcours 2-opt", "blue")
 plot_tsp(coords, route_hk, "Parcours Held-Karp", "green")
