@@ -2,10 +2,10 @@ import matplotlib.pyplot as plt
 import math
 import random
 
-# 1. Entrée du nombre de sommets
+# on deamnde le nombre de sommet ( taille matrice )
 n = int(input("Combien de sommets ? "))
 
-# 2. Saisie manuelle des distances
+# on entre chaque distance ( la moitié de la mtrice symétrique )
 print("\nEntrez les distances entre chaque paire de sommets (i < j).")
 dist_matrix = [[0] * n for _ in range(n)]
 for i in range(n):
@@ -19,20 +19,20 @@ for i in range(n):
             except ValueError:
                 print("❌ Entrée invalide. Veuillez entrer un nombre.")
 
-# 3. Coordonnées circulaires pour affichage
+# affichage
 coords = [[math.cos(2 * math.pi * i / n) * 10,
            math.sin(2 * math.pi * i / n) * 10] for i in range(n)]
 
-# 4. Chemin initial aléatoire
+# chemain initiale test
 initial_path = list(range(n))
 random.shuffle(initial_path)
 initial_path.append(initial_path[0])  # Retour au point de départ
 
-# 5. Fonction de calcul de distance totale
+# calcule distance total
 def calculate_total_distance(path, dist_matrix):
     return sum(dist_matrix[path[i]][path[i + 1]] for i in range(len(path) - 1))
 
-# 6. Implémentation de l’algorithme 2-opt
+# algorithme 2-opt
 def two_opt(path, dist_matrix):
     best = path
     improved = True
@@ -49,11 +49,11 @@ def two_opt(path, dist_matrix):
         path = best
     return path
 
-# 7. Appliquer 2-opt
+# Application 2-opt
 optimized_path = two_opt(initial_path, dist_matrix)
 optimized_distance = calculate_total_distance(optimized_path, dist_matrix)
 
-# 8. Affichage du graphe avec chemin
+# Affichage du graphe avec les différents chemins
 def plot_two_opt_path(path, coords, dist_matrix):
     plt.figure(figsize=(10, 8))
 
@@ -82,10 +82,10 @@ def plot_two_opt_path(path, coords, dist_matrix):
     plt.grid(True)
     plt.show()
 
-# 9. Tracer le résultat
+# Tracer le résultat
 plot_two_opt_path(optimized_path, coords, dist_matrix)
 
-# 10. Affichage du chemin et de la distance
+# Affichage du chemin et de la distance
 path_human = [i + 1 for i in optimized_path]
 print("\n✅ Résultat")
 print("Chemin optimisé (2-opt) :", path_human)
