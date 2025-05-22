@@ -17,7 +17,7 @@ for i in range(n):
                 dist_matrix[j][i] = val
                 break
             except ValueError:
-                print("❌ Entrée invalide. Veuillez entrer un nombre.")
+                print(" Entrée invalide. Veuillez entrer un nombre.")
 
 # affichage
 coords = [[math.cos(2 * math.pi * i / n) * 10,
@@ -87,6 +87,6 @@ plot_two_opt_path(optimized_path, coords, dist_matrix)
 
 # Affichage du chemin et de la distance
 path_human = [i + 1 for i in optimized_path]
-print("\n✅ Résultat")
+print("\n Résultat")
 print("Chemin optimisé (2-opt) :", path_human)
 print("Distance totale :", round(optimized_distance, 2))
