@@ -1,13 +1,11 @@
-# Code interactif pour saisir manuellement une matrice de distances et résoudre le TSP avec MTZ
-
 from pulp import LpProblem, LpMinimize, LpVariable, lpSum, LpBinary, LpInteger, LpStatus, value
 import matplotlib.pyplot as plt
 import math
 
-# 1. Entrée du nombre de sommets
+# on entre ici le nombre de sommet ( taille matrice)
 n = int(input("Combien de sommets ? "))
 
-# 2. Saisie manuelle des distances (matrice symétrique)
+# on entre chaques distances (on donne les valeurs de la matrice symétrique)
 print("\nEntrez les distances entre chaque paire de sommets (la diagonale est à 0 automatiquement).")
 print("Vous n'entrez que les distances supérieures à la diagonale (i < j), elles seront recopiées en symétrie.")
 
@@ -23,13 +21,13 @@ for i in range(n):
             except ValueError:
                 print("❌ Entrée invalide. Veuillez entrer un nombre.")
 
-# 3. Coordonnées fictives pour affichage (disposition circulaire)
+# mise en place du shéma final
 coords = [[math.cos(2 * math.pi * i / n) * 10, math.sin(2 * math.pi * i / n) * 10] for i in range(n)]
 
-# 4. Résolution du TSP avec formulation MTZ
+# Résolution du TSP avec le MTZ
 model = LpProblem("TSP_MTZ", LpMinimize)
 x = {(i, j): LpVariable(f"x_{i+1}_{j+1}", cat=LpBinary) for i in range(n) for j in range(n) if i != j}
-u = {i: LpVariable(f"u_{i+1}", lowBound=1, upBound=n, cat=LpInteger) for i in range(1, n)}
+u = {i: LpVariable(f"u_{i+1}", lowBound=1, upBound=n, cat=LpInteger) for i in range(n)}
 
 model += lpSum(dist_matrix[i][j] * x[i, j] for i in range(n) for j in range(n) if i != j)
 
@@ -44,17 +42,23 @@ for i in range(1, n):
 
 model.solve()
 
-# 5. Extraire le chemin optimal
+# on extrait le chemin optimal
 edges = [(i, j) for i in range(n) for j in range(n) if i != j and x[i, j].varValue == 1]
 path = [0]
+visited = set(path)
 while len(path) < n:
+    found = False
     for i, j in edges:
-        if i == path[-1] and j not in path:
+        if i == path[-1] and j not in visited:
             path.append(j)
+            visited.add(j)
+            found = True
             break
+    if not found:
+        break
 path.append(0)
 
-# 6. Affichage graphique
+# on affiche le graphique avec toutes les distances et la distances optimal en bleu
 def plot_enhanced_path(path, coords, dist_matrix):
     plt.figure(figsize=(10, 8))
     for i in range(n):
@@ -81,7 +85,7 @@ def plot_enhanced_path(path, coords, dist_matrix):
 
 plot_enhanced_path(path, coords, dist_matrix)
 
-# 7. Résultat texte
+# 7. Résultat 
 path_human = [i + 1 for i in path]
 print("\n✅ Résultat")
 print("Chemin optimal :", path_human)
